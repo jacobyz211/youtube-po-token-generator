@@ -1,8 +1,8 @@
-import { generate } from './index.js';
-import { createServer } from 'http';
+const { generate } = require('./index.js');
+const { createServer } = require('http');
 
 const PORT = process.env.PORT || 3000;
-const CACHE_TTL_MS = 5 * 60 * 1000; // refresh token every 5 minutes
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 let cache = null;
 let cacheTime = 0;
@@ -10,12 +10,11 @@ let cacheTime = 0;
 async function getToken() {
   const now = Date.now();
   if (cache && (now - cacheTime) < CACHE_TTL_MS) return cache;
-  // Explicitly nullify old result before generating so GC can collect jsdom
   cache = null;
   const result = await generate();
   cache = result;
   cacheTime = now;
-  if (global.gc) global.gc(); // force GC after jsdom teardown if --expose-gc
+  if (global.gc) global.gc();
   return cache;
 }
 
