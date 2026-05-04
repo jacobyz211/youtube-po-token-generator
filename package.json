@@ -1,6 +1,7 @@
 {
   "name": "youtube-po-token-generator",
   "version": "0.6.0",
+  "type": "module",
   "author": "Yunzhe <yunzhe@zju.edu.cn>",
   "description": "It generates a valid poToken with visitorData fetched from YouTube.",
   "keywords": [
@@ -20,6 +21,7 @@
     "jsdom": "^26.0.0"
   },
   "scripts": {
+    "start": "node --max-old-space-size=256 server.js",
     "prepublishOnlyFIXME": "npx synp --source-file yarn.lock -f && npm shrinkwrap && git checkout yarn.lock"
   },
   "bin": {

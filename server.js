@@ -2,6 +2,22 @@ import { generate } from './index.js';
 import { createServer } from 'http';
 
 const PORT = process.env.PORT || 3000;
+const CACHE_TTL_MS = 5 * 60 * 1000; // refresh token every 5 minutes
+
+let cache = null;
+let cacheTime = 0;
+
+async function getToken() {
+  const now = Date.now();
+  if (cache && (now - cacheTime) < CACHE_TTL_MS) return cache;
+  // Explicitly nullify old result before generating so GC can collect jsdom
+  cache = null;
+  const result = await generate();
+  cache = result;
+  cacheTime = now;
+  if (global.gc) global.gc(); // force GC after jsdom teardown if --expose-gc
+  return cache;
+}
 
 createServer(async (req, res) => {
   if (req.url !== '/token') {
@@ -9,7 +25,7 @@ createServer(async (req, res) => {
     return res.end(JSON.stringify({ error: 'Not found. Use GET /token' }));
   }
   try {
-    const { visitorData, poToken } = await generate();
+    const { visitorData, poToken } = await getToken();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ visitorData, poToken }));
   } catch (e) {
